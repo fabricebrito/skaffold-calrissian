@@ -1,0 +1,34 @@
+apiVersion: skaffold/v4beta9
+kind: Config
+metadata:
+  name: calrissian
+
+build:
+
+  artifacts:
+    - image: calrissian
+      context: .
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "calrissian"
+            dest: "/app/"
+      hooks:
+        before:
+        - command: ["/bin/sh", "./pre-build.sh"]
+
+deploy:
+  helm:
+    releases:
+      - name: calrissian-dev
+        chartPath: calrissian-dev
+        namespace: calrissian
+        createNamespace: true
+        setValueTemplates:
+          pvc.storage: 10Gi
+          pvc.storageClassName: standard
+          resources.limits.cpu: "2"
+          resources.limits.memory: "1024Mi"
+          resources.requests.cpu: "1"
+          resources.requests.memory: "512Mi"
